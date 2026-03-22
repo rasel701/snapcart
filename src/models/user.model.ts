@@ -29,7 +29,6 @@ const userSchema = new Schema<UserI>(
     password: {
       type: String,
       required: [true, "Password is required"],
-      select: false,
     },
     mobile: {
       type: String,
@@ -46,3 +45,5 @@ const userSchema = new Schema<UserI>(
 const userModel = models.User || model<UserI>("User", userSchema);
 
 export default userModel;
+
+//
