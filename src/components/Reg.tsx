@@ -15,6 +15,7 @@ import Image from "next/image";
 import google from "@/assets/google.png";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 type protoType = {
   nextStep: (x: number) => void;
@@ -145,6 +146,7 @@ const Register = ({ nextStep }: protoType) => {
         <button
           type="button"
           className="w-full flex items-center justify-center gap-3 border border-gray-300 hover:bg-gray-50 py-2 rounded-xl text-gray-700 font-medium transition-all duration-200 cursor-pointer"
+          onClick={() => signIn("google")}
         >
           <Image src={google} width={20} height={20} alt="google" />
           Continue with Google

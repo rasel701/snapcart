@@ -115,6 +115,7 @@ const Login = () => {
         </div>
         <button
           type="button"
+          onClick={() => signIn("google")}
           className="w-full flex items-center justify-center gap-3 border border-gray-300 hover:bg-gray-50 py-2 rounded-xl text-gray-700 font-medium transition-all duration-200 cursor-pointer"
         >
           <Image src={google} width={20} height={20} alt="google" />

@@ -5,9 +5,10 @@ type Role = "user" | "admin" | "delivery";
 interface UserI extends Document {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   mobile?: string;
   role: Role;
+  image?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,7 +29,7 @@ const userSchema = new Schema<UserI>(
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
+      required: false,
     },
     mobile: {
       type: String,
@@ -37,6 +38,9 @@ const userSchema = new Schema<UserI>(
       type: String,
       enum: ["user", "admin", "delivery"],
       default: "user",
+    },
+    image: {
+      type: String,
     },
   },
   { timestamps: true },

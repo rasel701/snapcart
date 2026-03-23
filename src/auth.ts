@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import connectDB from "./lib/db";
 import userModel from "./models/user.model";
 import bcrypt from "bcryptjs";
+import Google from "next-auth/providers/google";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -11,12 +12,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "email", type: "email" },
         password: { label: "password", type: "password" },
       },
-      async authorize(credentials, request) {
+      async authorize(credentials) {
         await connectDB();
         const email = credentials.email;
         const password = credentials.password as string;
         const user = await userModel.findOne({ email });
-        if (!user) {
+        if (!user || !user.password) {
           throw new Error("User does not exist");
         }
 
@@ -34,8 +35,36 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         };
       },
     }),
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        await connectDB();
+        try {
+          let dbUser = await userModel.findOne({ email: user.email });
+          if (!dbUser) {
+            dbUser = await userModel.create({
+              name: user.name,
+              email: user.email,
+              image: user.image,
+              role: "user",
+            });
+          }
+
+          user.id = dbUser._id.toString();
+          user.role = dbUser.role;
+        } catch (error) {
+          console.error("DB Error:", error);
+          return false; //
+        }
+        return true;
+      }
+    },
+
     jwt({ token, user }) {
       if (user) {
         ((token.id = user.id),
