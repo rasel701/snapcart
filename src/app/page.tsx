@@ -1,5 +1,37 @@
-import Image from "next/image";
+import { auth } from "@/auth";
+import EditAndPassword from "@/components/EditAndPassword";
+import Nav from "@/components/Nav";
+import connectDB from "@/lib/db";
+import userModel from "@/models/user.model";
+import { redirect } from "next/navigation";
+import React from "react";
 
-export default function Home() {
-  return <>Hello</>;
-}
+const Home = async () => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return redirect("/login");
+  }
+
+  await connectDB();
+
+  const user = await userModel.findById(session.user.id);
+
+  if (!user) {
+    return redirect("/login");
+  }
+
+  const isInComplete = !user.mobile || !user.role;
+
+  if (isInComplete) {
+    return <EditAndPassword />;
+  }
+
+  return (
+    <>
+      <Nav user={user} />
+    </>
+  );
+};
+
+export default Home;

@@ -36,7 +36,7 @@ const Register = ({ nextStep }: protoType) => {
     setLoading(true);
     try {
       const result = await axios.post("/api/auth/register", user);
-      console.log(result);
+      router.push("/login");
       setLoading(false);
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
@@ -146,7 +146,7 @@ const Register = ({ nextStep }: protoType) => {
         <button
           type="button"
           className="w-full flex items-center justify-center gap-3 border border-gray-300 hover:bg-gray-50 py-2 rounded-xl text-gray-700 font-medium transition-all duration-200 cursor-pointer"
-          onClick={() => signIn("google")}
+          onClick={() => signIn("google", { callbackUrl: "/" })}
         >
           <Image src={google} width={20} height={20} alt="google" />
           Continue with Google

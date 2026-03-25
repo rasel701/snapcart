@@ -61,8 +61,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           console.error("DB Error:", error);
           return false; //
         }
-        return true;
       }
+      return true;
     },
 
     jwt({ token, user }) {
