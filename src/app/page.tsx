@@ -15,7 +15,8 @@ const Home = async () => {
 
   await connectDB();
 
-  const user = await userModel.findById(session.user.id);
+  const userDoc = await userModel.findById(session.user.id);
+  const user = JSON.parse(JSON.stringify(userDoc));
 
   if (!user) {
     return redirect("/login");
