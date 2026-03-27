@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 import DropDown from "./DropDown";
-import { div } from "motion/react-client";
 
 interface User {
   name: string;
@@ -40,7 +39,7 @@ const Nav = ({ user }: { user: User }) => {
 
   return (
     <div className="relative">
-      <div className="w-[95%] fixed top-4 left-1/2 -translate-x-1/2 bg-linear-to-r from-green-500 to-green-700 rounded-2xl shadow-lg shadow-black/30 flex justify-between items-center h-18 px-4">
+      <div className="w-[95%] fixed top-4 left-1/2 -translate-x-1/2 bg-linear-to-r from-green-500 to-green-700 rounded-2xl shadow-lg shadow-black/30 flex justify-between items-center h-18 px-4 z-50">
         <Link
           href={"/"}
           className="text-xl font-bold text-white tracking-wide hover:scale-105 transition-transform"
