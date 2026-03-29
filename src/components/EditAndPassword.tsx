@@ -2,6 +2,7 @@
 import axios from "axios";
 import { BikeIcon, Info, UserCog, UserIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useSession } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -16,6 +17,7 @@ const EditAndPassword = () => {
   const [mobile, setMobile] = useState("");
   const isMobileValid = mobile.length === 11;
   const router = useRouter();
+  const { update } = useSession();
 
   const handleEdit = async () => {
     try {
@@ -23,6 +25,7 @@ const EditAndPassword = () => {
         role: selectedRole,
         mobile,
       });
+      await update({ role: selectedRole });
       router.push("/");
     } catch (error) {
       console.log(error);
