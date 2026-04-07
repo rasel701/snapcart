@@ -167,7 +167,7 @@ const Nav = ({ user }: { user: User }) => {
 
           {data?.user?.role === "user" && (
             <Link
-              href={""}
+              href={"/user/cart"}
               className="relative bg-white rounded-full w-11 h-11 flex items-center justify-center shadow-md hover:scale-105 transition-all"
             >
               <ShoppingCartIcon className="text-green-600" />
