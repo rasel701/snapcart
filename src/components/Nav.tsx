@@ -19,6 +19,8 @@ import DropDown from "./DropDown";
 import { signOut, useSession } from "next-auth/react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 interface User {
   name: string;
@@ -32,6 +34,8 @@ interface User {
 }
 
 const Nav = ({ user }: { user: User }) => {
+  const { cartData } = useSelector((state: RootState) => state.cart);
+
   const [open, setOpen] = useState<boolean>(false);
   const [searchBarOpen, setSearchBarOpen] = useState(false);
   const { data } = useSession();
@@ -96,7 +100,7 @@ const Nav = ({ user }: { user: User }) => {
             </div>
             <div className="flex flex-col items-center gap-4 mt-6 text-white">
               <Link
-                href={``}
+                href={`/admin/add-grocery`}
                 className="flex items-center bg-white/10 w-[80%]  justify-center p-3 rounded-lg gap-3 hover:bg-white/20 hover:pl-4 transition-all"
               >
                 <PlusCircle />
@@ -168,7 +172,7 @@ const Nav = ({ user }: { user: User }) => {
             >
               <ShoppingCartIcon className="text-green-600" />
               <span className="bg-red-500 w-5 h-5 flex justify-center items-center rounded-lg absolute -top-1 right-0 text-white">
-                0
+                {cartData.length}
               </span>
             </Link>
           )}
@@ -176,7 +180,7 @@ const Nav = ({ user }: { user: User }) => {
             {data?.user?.role === "admin" && (
               <div className="hidden md:flex items-center gap-4 ">
                 <Link
-                  href={``}
+                  href={`/admin/add-grocery`}
                   className="flex items-center gap-2 bg-white text-green-700 font-semibold px-4 py-2 rounded-full hover:bg-green-100 transition-all"
                 >
                   <PlusCircle />

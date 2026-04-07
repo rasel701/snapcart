@@ -3,7 +3,7 @@ import mongoose, { model, Schema, Document, models } from "mongoose";
 interface IGrocery extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
-  caterory: string;
+  category: string;
   price: string;
   unit: string;
   image: string;
@@ -17,7 +17,7 @@ const grocerySchema = new Schema<IGrocery>(
       type: String,
       required: [true, "name is required"],
     },
-    caterory: {
+    category: {
       type: String,
       enum: [
         "Fruits & Vegetables",
@@ -39,6 +39,7 @@ const grocerySchema = new Schema<IGrocery>(
     unit: {
       type: String,
       required: true,
+      enum: ["kg", "g", "liter", "ml", "price", "pack"],
     },
     image: {
       type: String,

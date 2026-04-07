@@ -13,14 +13,15 @@ const uploadCloudinary = async (file: Blob): Promise<string | null> => {
 
   try {
     const arrayBuffer = await file.arrayBuffer();
+
     const buffer = Buffer.from(arrayBuffer);
 
-    return new Promise((resolve, rejects) => {
+    return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { resource_type: "auto" },
+        { resource_type: "auto", folder: "snapcart" },
         (error, result) => {
           if (error) {
-            rejects(error);
+            reject(error);
           } else {
             resolve(result?.secure_url ?? null);
           }
