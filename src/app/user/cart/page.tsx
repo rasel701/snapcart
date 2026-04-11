@@ -165,7 +165,7 @@ const CardPage = () => {
             </div>
 
             <button className="w-full bg-green-600 text-white mt-8 py-4 rounded-2xl font-bold text-lg hover:bg-green-700 transition-all shadow-lg shadow-green-100 active:scale-[0.98]">
-              Proceed to Checkout
+              <Link href={"/user/checkout"}>Proceed to Checkout</Link>
             </button>
 
             <p className="text-center text-xs text-gray-400 mt-4">

@@ -1,5 +1,4 @@
 "use client";
-
 import { AppDispatch } from "@/redux/store";
 import { setUserData } from "@/redux/userSlice";
 import axios from "axios";
@@ -12,6 +11,7 @@ const useGetMe = () => {
     const getMe = async () => {
       try {
         const result = await axios.get("/api/me");
+        console.log(result);
         dispatch(setUserData(result.data));
       } catch (error) {
         console.log(error);
