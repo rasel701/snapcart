@@ -6,18 +6,22 @@ import { OpenStreetMapProvider } from "leaflet-geosearch";
 import {
   ArrowLeft,
   Building,
+  CreditCard,
+  CreditCardIcon,
   Home,
   Loader2,
   MapPin,
   Navigation,
   Phone,
   PinIcon,
+  Truck,
   User,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import CardPage from "./../cart/page";
 
 interface addressI {
   fullName: string;
@@ -31,12 +35,15 @@ interface addressI {
 const CheckoutPage = () => {
   const router = useRouter();
   const { userData } = useSelector((state: RootState) => state.user);
+  const { deliveryFee, finalTotal, subTotal, cartData } = useSelector(
+    (state: RootState) => state.cart,
+  );
   const [searchLoading, setSearchLoading] = useState(false);
   const [mainLocationLoading, setMainLocationLoading] =
     useState<boolean>(false);
   const [address, setAddress] = useState<addressI>({
-    fullName: "",
-    mobile: "",
+    fullName: userData?.name || "",
+    mobile: userData?.mobile || "",
     city: "",
     state: "",
     pincode: "",
@@ -45,8 +52,9 @@ const CheckoutPage = () => {
 
   console.log(userData?.name);
   const [position, setPosition] = useState<[number, number] | null>(null);
-  const [mainPosition, setMainPositon] = useState<[number, number] | null>();
+
   const [searchQuery, setSearchQuery] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
 
   const handleSearchQuery = async () => {
     setSearchLoading(true);
@@ -91,7 +99,6 @@ const CheckoutPage = () => {
         (pos) => {
           const { latitude, longitude } = pos.coords;
           setPosition([latitude, longitude]);
-          setMainPositon([latitude, longitude]);
         },
         (error) => console.log("location error ", error),
         { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 },
@@ -111,6 +118,42 @@ const CheckoutPage = () => {
         (error) => console.log("location error ", error),
         { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 },
       );
+    }
+  };
+
+  const handleCod = async () => {
+    if (
+      !address.city ||
+      !address.fullAddress ||
+      !address.fullName ||
+      !address.mobile ||
+      !address.pincode ||
+      !address.state
+    )
+      return;
+    try {
+      const result = await axios.post("/api/user/order", {
+        userId: userData?._id,
+        items: cartData.map((item) => ({
+          grocery: item._id,
+          name: item.name,
+          price: item.price,
+          unit: item.unit,
+          quantity: item.quantity,
+          image: item.image,
+        })),
+        totalAmount: finalTotal,
+        address: {
+          ...address,
+          latitude: position?.[0],
+          longitude: position?.[1],
+        },
+        paymentMethod,
+      });
+      console.log(result.data);
+      router.push("/user/order-success");
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -261,6 +304,59 @@ const CheckoutPage = () => {
               />
             </div>
           </div>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 h-fit"
+        >
+          <h1 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <CreditCard className="text-green-600" /> Payment Method
+          </h1>
+          <div className="space-y-4 mb-6">
+            <button
+              className={`flex items-center gap-3 w-full border rounded-lg p-3 transition-all ${paymentMethod === "online" ? "border-green-600 bg-gray-200 shadow-sm" : "hover:bg-gray-50"} `}
+              onClick={() => setPaymentMethod("online")}
+            >
+              <CreditCardIcon className="text-green-600" />
+              <span className="font-semibold text-gray-600">
+                Pay Online (stripe)
+              </span>
+            </button>
+            <button
+              className={`flex items-center gap-3 w-full border rounded-lg p-3 transition-all ${paymentMethod === "cod" ? "border-green-600 bg-gray-200 shadow-sm" : "hover:bg-gray-50"} `}
+              onClick={() => setPaymentMethod("cod")}
+            >
+              <Truck className="text-green-600" />
+              <span className="font-semibold text-gray-600">
+                Cash on Delivary
+              </span>
+            </button>
+          </div>
+          <div className="border-t pt-4 text-green-700 space-y-2 text-sm sm:text-base">
+            <div className="flex justify-between">
+              <span>Subtotal</span>
+              <span className="font-semibold">: ৳ {subTotal}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Delivary Fee</span>
+              <span className="font-semibold">: ৳{deliveryFee}</span>
+            </div>
+            <div className="flex justify-between font-bold border-t-2 pt-2">
+              <span>Final Total</span>
+              <span className="font-semibold">: ৳{finalTotal}</span>
+            </div>
+          </div>
+          <motion.button
+            whileTap={{ scale: 0.93 }}
+            className="w-full mt-6 bg-green-600 text-white py-3 rounded-full hover:bg-green-700 transition-all font-semibold cursor-pointer"
+            onClick={() => {
+              paymentMethod === "cod" ? handleCod() : null;
+            }}
+          >
+            {paymentMethod === "cod" ? "Place Order" : "Pay & Place Order"}
+          </motion.button>
         </motion.div>
       </div>
     </div>

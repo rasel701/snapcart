@@ -1,0 +1,85 @@
+import mongoose, { Schema, model, models, Document } from "mongoose";
+import { number } from "motion";
+
+interface IOrder extends Document {
+  _id: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId;
+  items: [
+    {
+      grocery: mongoose.Types.ObjectId;
+      name: string;
+      price: string;
+      unit: string;
+      image: string;
+      quantity: number;
+    },
+  ];
+  totalAmount: number;
+  paymentMethod: "cod" | "online";
+  address: {
+    fullName: string;
+    city: string;
+    state: string;
+    pinCode: string;
+    fullAddress: string;
+    mobile: string;
+    latitude: number;
+    longitude: number;
+  };
+  status: "pending" | "out of delivery" | "delivered";
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+const orderSchema = new Schema<IOrder>(
+  {
+    user: {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    items: [
+      {
+        grocery: {
+          type: mongoose.Types.ObjectId,
+          ref: "Grocery",
+          required: true,
+        },
+        name: String,
+        price: String,
+        unit: String,
+        image: String,
+        quantity: Number,
+      },
+    ],
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["cod", "online"],
+      default: "cod",
+    },
+    address: {
+      fullName: String,
+      city: String,
+      state: String,
+      pincode: String,
+      fullAddress: String,
+      mobile: String,
+      latitude: Number,
+      longitude: Number,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "out of delivery", "delivered"],
+      default: "pending",
+    },
+  },
+  { timestamps: true },
+);
+
+const orderModel = models.Order || model<IOrder>("Order", orderSchema);
+
+export default orderModel;

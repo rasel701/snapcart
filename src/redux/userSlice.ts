@@ -1,7 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import mongoose from "mongoose";
 
 type Role = "user" | "admin" | "delivery";
 interface IUser {
+  _id: mongoose.Types.ObjectId;
   name: string;
   email: string;
   password?: string;
