@@ -42,13 +42,21 @@ const CheckoutPage = () => {
   const [mainLocationLoading, setMainLocationLoading] =
     useState<boolean>(false);
   const [address, setAddress] = useState<addressI>({
-    fullName: userData?.name || "",
-    mobile: userData?.mobile || "",
+    fullName: "",
+    mobile: "",
     city: "",
     state: "",
     pincode: "",
     fullAddress: "",
   });
+
+  useEffect(() => {
+    setAddress({
+      ...address,
+      fullName: userData?.name,
+      mobile: userData?.mobile,
+    });
+  }, []);
 
   console.log(userData?.name);
   const [position, setPosition] = useState<[number, number] | null>(null);
@@ -121,6 +129,25 @@ const CheckoutPage = () => {
     }
   };
 
+  const paymentData = {
+    userId: userData?._id,
+    items: cartData.map((item) => ({
+      grocery: item._id,
+      name: item.name,
+      price: item.price,
+      unit: item.unit,
+      quantity: item.quantity,
+      image: item.image,
+    })),
+    totalAmount: finalTotal,
+    address: {
+      ...address,
+      latitude: position?.[0],
+      longitude: position?.[1],
+    },
+    paymentMethod,
+  };
+
   const handleCod = async () => {
     if (
       !address.city ||
@@ -132,26 +159,27 @@ const CheckoutPage = () => {
     )
       return;
     try {
-      const result = await axios.post("/api/user/order", {
-        userId: userData?._id,
-        items: cartData.map((item) => ({
-          grocery: item._id,
-          name: item.name,
-          price: item.price,
-          unit: item.unit,
-          quantity: item.quantity,
-          image: item.image,
-        })),
-        totalAmount: finalTotal,
-        address: {
-          ...address,
-          latitude: position?.[0],
-          longitude: position?.[1],
-        },
-        paymentMethod,
-      });
+      const result = await axios.post("/api/user/order", paymentData);
       console.log(result.data);
       router.push("/user/order-success");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleOnlinePayment = async () => {
+    if (
+      !address.city ||
+      !address.fullAddress ||
+      !address.fullName ||
+      !address.mobile ||
+      !address.pincode ||
+      !address.state
+    )
+      return;
+    try {
+      const result = await axios.post("/api/user/payment", paymentData);
+      window.location.href = result.data.url;
     } catch (error) {
       console.log(error);
     }
@@ -194,7 +222,7 @@ const CheckoutPage = () => {
               <input
                 type="text"
                 placeholder={address.fullName || userData?.name}
-                value={address.fullName}
+                value={address.fullName || userData?.name}
                 onChange={(e) =>
                   setAddress({ ...address, fullName: e.target.value })
                 }
@@ -352,7 +380,7 @@ const CheckoutPage = () => {
             whileTap={{ scale: 0.93 }}
             className="w-full mt-6 bg-green-600 text-white py-3 rounded-full hover:bg-green-700 transition-all font-semibold cursor-pointer"
             onClick={() => {
-              paymentMethod === "cod" ? handleCod() : null;
+              paymentMethod === "cod" ? handleCod() : handleOnlinePayment();
             }}
           >
             {paymentMethod === "cod" ? "Place Order" : "Pay & Place Order"}

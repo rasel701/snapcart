@@ -26,6 +26,7 @@ interface IOrder extends Document {
     latitude: number;
     longitude: number;
   };
+  isPaid: boolean;
   status: "pending" | "out of delivery" | "delivered";
   createdAt?: Date;
   updatedAt?: Date;
@@ -52,6 +53,10 @@ const orderSchema = new Schema<IOrder>(
         quantity: Number,
       },
     ],
+    isPaid: {
+      type: Boolean,
+      default: false,
+    },
     totalAmount: {
       type: Number,
       required: true,
