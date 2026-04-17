@@ -1,6 +1,6 @@
 "use client";
 import MapView from "@/components/MapView";
-import { RootState } from "@/redux/store";
+import { AppDispatch, RootState } from "@/redux/store";
 import axios from "axios";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
 import {
@@ -19,9 +19,11 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useCallback, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import CardPage from "./../cart/page";
+import { setDivision } from "@/redux/cartSlice";
+import { toast } from "react-toastify";
 
 interface addressI {
   fullName: string;
@@ -38,6 +40,7 @@ const CheckoutPage = () => {
   const { deliveryFee, finalTotal, subTotal, cartData } = useSelector(
     (state: RootState) => state.cart,
   );
+  const dispatch = useDispatch<AppDispatch>();
   const [searchLoading, setSearchLoading] = useState(false);
   const [mainLocationLoading, setMainLocationLoading] =
     useState<boolean>(false);
@@ -51,12 +54,14 @@ const CheckoutPage = () => {
   });
 
   useEffect(() => {
-    setAddress({
-      ...address,
-      fullName: userData?.name,
-      mobile: userData?.mobile,
-    });
-  }, []);
+    if (userData) {
+      setAddress((prev) => ({
+        ...prev,
+        fullName: userData.name || "",
+        mobile: userData.mobile || "",
+      }));
+    }
+  }, [userData]);
 
   console.log(userData?.name);
   const [position, setPosition] = useState<[number, number] | null>(null);
@@ -70,7 +75,7 @@ const CheckoutPage = () => {
 
     const results = await provider.search({ query: searchQuery });
     if (results && results.length > 0) {
-      const { x, y, raw, label } = results[0];
+      const { x, y } = results[0];
       setPosition([y, x]);
       setSearchLoading(false);
     } else {
@@ -85,7 +90,7 @@ const CheckoutPage = () => {
         const result = await axios.get(
           `https://nominatim.openstreetmap.org/reverse?lat=${position[0]}&lon=${position[1]}&format=json`,
         );
-        console.log(result.data);
+        dispatch(setDivision(result.data.address.state));
         setAddress({
           ...address,
           city: result.data.address.county,
@@ -101,18 +106,19 @@ const CheckoutPage = () => {
     fetchAddress();
   }, [position]);
 
-  useEffect(() => {
+  const getCurrentLoaction = useCallback(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          setPosition([latitude, longitude]);
-        },
-        (error) => console.log("location error ", error),
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 },
+        (pos) => setPosition([pos.coords.latitude, pos.coords.longitude]),
+        (err) => toast.error("Location access denied"),
+        { enableHighAccuracy: true },
       );
     }
   }, []);
+
+  useEffect(() => {
+    getCurrentLoaction();
+  }, [getCurrentLoaction]);
 
   const handleGoToMainPosition = (): void => {
     if (navigator.geolocation) {
@@ -146,42 +152,45 @@ const CheckoutPage = () => {
       longitude: position?.[1],
     },
     paymentMethod,
+    deliveryFee: deliveryFee,
   };
 
-  const handleCod = async () => {
-    if (
-      !address.city ||
-      !address.fullAddress ||
-      !address.fullName ||
-      !address.mobile ||
-      !address.pincode ||
-      !address.state
-    )
-      return;
-    try {
-      const result = await axios.post("/api/user/order", paymentData);
-      console.log(result.data);
-      router.push("/user/order-success");
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const [loading, setLoading] = useState(false);
 
   const handleOnlinePayment = async () => {
-    if (
-      !address.city ||
-      !address.fullAddress ||
-      !address.fullName ||
-      !address.mobile ||
-      !address.pincode ||
-      !address.state
-    )
+    const requiredFields = [
+      "fullName",
+      "mobile",
+      "fullAddress",
+      "city",
+      "state",
+      "pincode",
+    ];
+    const isFormValid = requiredFields.every(
+      (field) => address[field as keyof addressI],
+    );
+
+    if (!isFormValid) {
+      toast.error("Please fill all the address fields");
       return;
+    }
     try {
-      const result = await axios.post("/api/user/payment", paymentData);
-      window.location.href = result.data.url;
+      const endpoint =
+        paymentMethod === "cod" ? "/api/user/order" : "/api/user/payment";
+      const result = await axios.post(endpoint, {
+        ...paymentData,
+      });
+
+      if (paymentMethod === "online") {
+        window.location.href = result.data.url;
+      } else {
+        router.push("/user/order-success");
+      }
     } catch (error) {
       console.log(error);
+      toast.error("Something went wrong. Try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -222,7 +231,7 @@ const CheckoutPage = () => {
               <input
                 type="text"
                 placeholder={address.fullName || userData?.name}
-                value={address.fullName || userData?.name}
+                value={address.fullName}
                 onChange={(e) =>
                   setAddress({ ...address, fullName: e.target.value })
                 }
@@ -369,7 +378,7 @@ const CheckoutPage = () => {
             </div>
             <div className="flex justify-between">
               <span>Delivary Fee</span>
-              <span className="font-semibold">: ৳{deliveryFee}</span>
+              <span className="font-semibold">{deliveryFee}</span>
             </div>
             <div className="flex justify-between font-bold border-t-2 pt-2">
               <span>Final Total</span>
@@ -378,12 +387,17 @@ const CheckoutPage = () => {
           </div>
           <motion.button
             whileTap={{ scale: 0.93 }}
+            disabled={loading}
+            onClick={handleOnlinePayment}
             className="w-full mt-6 bg-green-600 text-white py-3 rounded-full hover:bg-green-700 transition-all font-semibold cursor-pointer"
-            onClick={() => {
-              paymentMethod === "cod" ? handleCod() : handleOnlinePayment();
-            }}
           >
-            {paymentMethod === "cod" ? "Place Order" : "Pay & Place Order"}
+            {loading ? (
+              <Loader2 className="animate-spin mx-auto" />
+            ) : paymentMethod === "cod" ? (
+              "Place Order"
+            ) : (
+              "Pay & Place Order"
+            )}
           </motion.button>
         </motion.div>
       </div>
@@ -392,3 +406,6 @@ const CheckoutPage = () => {
 };
 
 export default CheckoutPage;
+
+//
+// className=""

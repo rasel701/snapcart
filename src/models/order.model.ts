@@ -1,7 +1,6 @@
 import mongoose, { Schema, model, models, Document } from "mongoose";
-import { number } from "motion";
 
-interface IOrder extends Document {
+export interface IOrder extends Document {
   _id: mongoose.Types.ObjectId;
   user: mongoose.Types.ObjectId;
   items: [
@@ -28,6 +27,7 @@ interface IOrder extends Document {
   };
   isPaid: boolean;
   status: "pending" | "out of delivery" | "delivered";
+  deliveryFee: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -81,6 +81,7 @@ const orderSchema = new Schema<IOrder>(
       enum: ["pending", "out of delivery", "delivered"],
       default: "pending",
     },
+    deliveryFee: Number,
   },
   { timestamps: true },
 );

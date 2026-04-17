@@ -4,7 +4,7 @@ import { ArrowLeft, ShoppingBasket, Trash2, Plus, Minus } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AnimatePresence, motion } from "framer-motion"; // motion/react থেকে অনেক সময় framer-motion ভালো কাজ করে
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import {
   decreaseQuantity,
@@ -22,6 +22,8 @@ const CardPage = () => {
     (acc, item) => acc + Number(item.price) * item.quantity,
     0,
   );
+
+  console.log(deliveryFee);
 
   return (
     <div className="w-[95%] max-w-7xl mx-auto mt-12 mb-24 min-h-[70vh]">

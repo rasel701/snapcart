@@ -41,9 +41,9 @@ function lineItemFun(items: IItems[]) {
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const { userId, items, paymentMethod, totalAmount, address } =
+    const { userId, items, paymentMethod, totalAmount, address, deliveryFee } =
       await req.json();
-
+    console.log("Dilivery Fee is :", deliveryFee);
     if (!items || !userId || !paymentMethod || !totalAmount || !address) {
       return NextResponse.json(
         {
@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
       paymentMethod,
       totalAmount,
       address,
+      deliveryFee,
     });
 
     const session = await stripe.checkout.sessions.create({

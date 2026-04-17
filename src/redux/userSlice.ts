@@ -7,7 +7,7 @@ interface IUser {
   name: string;
   email: string;
   password?: string;
-  mobile?: string;
+  mobile: string;
   role: Role;
   image?: string;
   createdAt: Date;

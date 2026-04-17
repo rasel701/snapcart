@@ -18,13 +18,15 @@ interface ICartSlice {
   subTotal: number;
   deliveryFee: number;
   finalTotal: number;
+  division: string;
 }
 
 const initialState: ICartSlice = {
   cartData: [],
   subTotal: 0,
-  deliveryFee: 40,
-  finalTotal: 40,
+  deliveryFee: 0,
+  finalTotal: 0,
+  division: "",
 };
 
 const cartSlice = createSlice({
@@ -71,13 +73,22 @@ const cartSlice = createSlice({
         sum += Number(item.price) * item.quantity;
         return sum;
       }, 0);
-      state.deliveryFee = state.subTotal > 1000 ? 0 : 40;
+      state.deliveryFee = state.division == "Dhaka Division" ? 0 : 40;
       state.finalTotal = state.subTotal + state.deliveryFee;
+    },
+    setDivision: (state, action: PayloadAction<string>) => {
+      state.division = action.payload;
+      cartSlice.caseReducers.calculateTotals(state);
     },
   },
 });
 
-export const { addToCart, increaseQuantity, decreaseQuantity, removeItem } =
-  cartSlice.actions;
+export const {
+  addToCart,
+  increaseQuantity,
+  decreaseQuantity,
+  removeItem,
+  setDivision,
+} = cartSlice.actions;
 
 export default cartSlice.reducer;
