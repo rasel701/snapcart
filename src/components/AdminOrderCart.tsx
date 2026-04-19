@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { IOrder } from "@/models/order.model";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -15,28 +15,42 @@ import {
   Home,
 } from "lucide-react";
 import Image from "next/image";
+import { useReactToPrint } from "react-to-print";
 
 const AdminOrderCart = ({ order }: { order: IOrder }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const orderStatus = ["pending", "out of delivery"];
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  // স্ট্যাটাস অনুযায়ী কালার নির্ধারণ
   const statusColors = {
     pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
     "out of delivery": "bg-blue-100 text-blue-700 border-blue-200",
     delivered: "bg-green-100 text-green-700 border-green-200",
   };
 
+  const handlePrint = useReactToPrint({
+    contentRef,
+    documentTitle: `Invoice_${order._id}`,
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+      ref={contentRef}
     >
       {/* Header Section */}
       <div className="p-5 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-green-50 rounded-lg">
+          <div className="p-3 bg-green-50 rounded-lg flex items-center">
             <Package className="text-green-600" size={24} />
+            <h3 className="text-lg font-semibold text-gray-800">
+              OrderId:
+              <span className="text-green-700 font-bold">
+                #{order?._id.toString().slice(7)}
+              </span>
+            </h3>
           </div>
           <div>
             <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
@@ -155,10 +169,20 @@ const AdminOrderCart = ({ order }: { order: IOrder }) => {
 
                 {/* Action Buttons for Admin */}
                 <div className="mt-6 flex gap-2">
-                  <button className="flex-1 bg-green-600 text-white text-xs py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors">
-                    Update Status
-                  </button>
-                  <button className="px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold hover:bg-white transition-colors">
+                  <select
+                    name=""
+                    className="flex-1 bg-green-600 text-white  py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors px-3 outline-none"
+                  >
+                    {orderStatus.map((item, index) => (
+                      <option value={item} className="text-lg px-6" key={index}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold hover:bg-white transition-colors"
+                    onClick={() => handlePrint()}
+                  >
                     Print Invoice
                   </button>
                 </div>

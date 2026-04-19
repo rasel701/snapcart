@@ -24,6 +24,7 @@ import { useDispatch, useSelector } from "react-redux";
 import CardPage from "./../cart/page";
 import { setDivision } from "@/redux/cartSlice";
 import { toast } from "react-toastify";
+import { getSocket } from "@/lib/socket";
 
 interface addressI {
   fullName: string;
@@ -36,6 +37,7 @@ interface addressI {
 
 const CheckoutPage = () => {
   const router = useRouter();
+  const socket = getSocket();
   const { userData } = useSelector((state: RootState) => state.user);
   const { deliveryFee, finalTotal, subTotal, cartData } = useSelector(
     (state: RootState) => state.cart,
@@ -169,6 +171,7 @@ const CheckoutPage = () => {
     const isFormValid = requiredFields.every(
       (field) => address[field as keyof addressI],
     );
+    console.log(paymentData);
 
     if (!isFormValid) {
       toast.error("Please fill all the address fields");
@@ -180,10 +183,19 @@ const CheckoutPage = () => {
       const result = await axios.post(endpoint, {
         ...paymentData,
       });
+      console.log(result);
 
       if (paymentMethod === "online") {
         window.location.href = result.data.url;
       } else {
+        socket.emit("new-order-placed", {
+          orderId: result.data?._id,
+          customerName: result.data.address.fullName,
+          totalAmount: result.data.totalAmount,
+          message: "New Order come",
+          orderItem: result.data,
+        });
+        toast.success("Order placed successfully!");
         router.push("/user/order-success");
       }
     } catch (error) {
@@ -193,6 +205,8 @@ const CheckoutPage = () => {
       setLoading(false);
     }
   };
+
+  console.log(userData?._id);
 
   return (
     <div className="w-[92%] md:w-[80%] mx-auto py-10 relative">

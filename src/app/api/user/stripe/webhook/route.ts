@@ -1,5 +1,6 @@
 import connectDB from "@/lib/db";
 import orderModel from "@/models/order.model";
+import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -30,11 +31,31 @@ export async function POST(req: NextRequest) {
     const orderId = session.metadata?.orderId;
 
     if (orderId) {
-      await orderModel.findByIdAndUpdate(orderId, {
-        isPaid: true,
+      const updatedOrder = await orderModel
+        .findByIdAndUpdate(
+          orderId,
+          {
+            isPaid: true,
 
-        paymentId: session.payment_intent as string,
-      });
+            paymentId: session.payment_intent as string,
+          },
+          { new: true },
+        )
+        .populate("user");
+
+      try {
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_SOCKET_SERVER}/api/internal/order-notify`,
+          {
+            orderItem: updatedOrder,
+            orderId: updatedOrder?._id,
+            customerName: updatedOrder?.user?.name || "Online Customer",
+            amount: session.amount_total ? session.amount_total / 100 : 0,
+          },
+        );
+      } catch (error) {
+        console.log("Socket notify error:", error);
+      }
     }
   }
 

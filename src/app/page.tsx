@@ -2,10 +2,12 @@ import { auth } from "@/auth";
 import AdminDashboard from "@/components/AdminDashboard";
 import DelivaryDashboard from "@/components/DelivaryDashboard";
 import EditAndPassword from "@/components/EditAndPassword";
+import GeoUpdater from "@/components/GeoUpdater";
 import Nav from "@/components/Nav";
 import UserDashboard from "@/components/UserDashboard";
 import connectDB from "@/lib/db";
 import userModel from "@/models/user.model";
+import AdminMessage from "@/socket/AdminMessage";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -34,10 +36,14 @@ const Home = async () => {
   return (
     <>
       <Nav user={user} />
+      <GeoUpdater userId={user._id} />
       {user.role === "user" ? (
         <UserDashboard />
       ) : user.role === "admin" ? (
-        <AdminDashboard />
+        <>
+          <AdminDashboard />
+          <AdminMessage />
+        </>
       ) : (
         user.role === "delivery" && <DelivaryDashboard />
       )}

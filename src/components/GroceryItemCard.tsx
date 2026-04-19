@@ -25,7 +25,6 @@ const GroceryItemCard = ({ grocery }: { grocery: GroceryI }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { cartData } = useSelector((state: RootState) => state.cart);
   const cartItem = cartData.find((item) => item._id === grocery._id);
-  console.log(cartItem);
 
   return (
     <motion.div

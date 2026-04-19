@@ -43,9 +43,6 @@ const CategorySlider = () => {
   const checkScroll = () => {
     if (!scrollRef.current) return;
     const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-    console.log(scrollLeft);
-    console.log(scrollWidth);
-    console.log(clientWidth);
     setShowLeft(scrollLeft > 10);
     setshowRight(scrollLeft + clientWidth <= scrollWidth - 10);
   };
