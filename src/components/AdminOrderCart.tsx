@@ -16,11 +16,15 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useReactToPrint } from "react-to-print";
+import axios from "axios";
+import { getSocket } from "@/lib/socket";
 
 const AdminOrderCart = ({ order }: { order: IOrder }) => {
+  const socket = getSocket();
   const [isOpen, setIsOpen] = useState(false);
   const orderStatus = ["pending", "out of delivery"];
   const contentRef = useRef<HTMLDivElement>(null);
+  const [currentStatus, setCurrentStatus] = useState<string>(order.status);
 
   const statusColors = {
     pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
@@ -32,6 +36,20 @@ const AdminOrderCart = ({ order }: { order: IOrder }) => {
     contentRef,
     documentTitle: `Invoice_${order._id}`,
   });
+
+  const updateStatus = async (orderId: string, status: string) => {
+    try {
+      const result = await axios.post(
+        `/api/admin/update-order-status/${orderId}`,
+        { status },
+      );
+      console.log(result.data);
+      setCurrentStatus(status);
+      socket.emit("replace-status", { status, order });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <motion.div
@@ -66,7 +84,7 @@ const AdminOrderCart = ({ order }: { order: IOrder }) => {
           <span
             className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[order.status]}`}
           >
-            {order.status.toUpperCase()}
+            {currentStatus.toUpperCase()}
           </span>
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -172,6 +190,10 @@ const AdminOrderCart = ({ order }: { order: IOrder }) => {
                   <select
                     name=""
                     className="flex-1 bg-green-600 text-white  py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors px-3 outline-none"
+                    onChange={(e) =>
+                      updateStatus(order._id.toString(), e.target.value)
+                    }
+                    value={currentStatus}
                   >
                     {orderStatus.map((item, index) => (
                       <option value={item} className="text-lg px-6" key={index}>

@@ -80,6 +80,9 @@ const cartSlice = createSlice({
       state.division = action.payload;
       cartSlice.caseReducers.calculateTotals(state);
     },
+    clearCardData: (state) => {
+      state.cartData = [];
+    },
   },
 });
 
@@ -89,6 +92,7 @@ export const {
   decreaseQuantity,
   removeItem,
   setDivision,
+  clearCardData,
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

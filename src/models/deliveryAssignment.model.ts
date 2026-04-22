@@ -1,10 +1,13 @@
-import mongoos, { model, Schema, models, Document } from "mongoose";
+import mongoose, { model, Schema, models, Document } from "mongoose";
 
-interface IDeliveryAssignment extends Document {
-  _id: mongoos.Types.ObjectId;
-  order: mongoos.Types.ObjectId;
-  brodcastedTo: mongoos.Types.ObjectId[];
-  assigndTo: mongoos.Types.ObjectId | null;
+import "@/models/order.model";
+import "@/models/user.model";
+
+export interface IDeliveryAssignment extends Document {
+  _id: mongoose.Types.ObjectId;
+  order: mongoose.Types.ObjectId;
+  brodcastedTo: mongoose.Types.ObjectId[];
+  assigndTo: mongoose.Types.ObjectId | null;
   status: "brodcasted" | "assigned" | "completed";
   acceptedAt: Date;
   createdAt: Date;

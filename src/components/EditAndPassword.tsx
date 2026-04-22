@@ -8,9 +8,9 @@ import { useState } from "react";
 
 const EditAndPassword = () => {
   const [roles, setRoles] = useState([
-    { id: "admin", label: "Admin", icon: <UserCog /> },
-    { id: "user", label: "User", icon: <UserIcon /> },
-    { id: "delivery", label: "Delivery", icon: <BikeIcon /> },
+    { id: "admin", label: "Admin", icon: <UserCog size={38} /> },
+    { id: "user", label: "User", icon: <UserIcon size={38} /> },
+    { id: "delivery", label: "Delivery", icon: <BikeIcon size={38} /> },
   ]);
 
   const [selectedRole, setSelectedRole] = useState("");
@@ -18,6 +18,7 @@ const EditAndPassword = () => {
   const isMobileValid = mobile.length === 11;
   const router = useRouter();
   const { update } = useSession();
+  const [adminExist, setAdminExist] = useState(false);
 
   const handleEdit = async () => {
     try {
@@ -32,6 +33,18 @@ const EditAndPassword = () => {
     }
   };
 
+  useState(() => {
+    const getAdmin = async () => {
+      const result = await axios.get("/api/check-admin");
+      setAdminExist(result.data.adminExist);
+    };
+    getAdmin();
+  }, []);
+
+  const userRoles = adminExist
+    ? roles.filter((user) => user.label != "Admin")
+    : roles;
+
   return (
     <div className="flex flex-col min-h-screen p-6 w-full">
       <motion.h1
@@ -43,7 +56,7 @@ const EditAndPassword = () => {
         Select Your Role
       </motion.h1>
       <div className="flex flex-col md:flex-row justify-center items-center gap-6 mt-10">
-        {roles.map((role) => {
+        {userRoles.map((role) => {
           return (
             <motion.div
               whileTap={{ scale: 2, rotate: 3 }}
@@ -51,7 +64,7 @@ const EditAndPassword = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1 }}
               key={role.id}
-              className={`border-2 border-gray-300 shadow-2xl px-4 py-3 flex flex-col justify-center items-center rounded-xl  hover:border-green-400 transition-all cursor-pointer bg-gray-100 text-gray-600 ${selectedRole === role.id ? "bg-green-600 text-white" : ""}`}
+              className={`border-2 border-gray-300 shadow-2xl px-9 py-5 flex flex-col justify-center items-center rounded-xl  hover:border-green-400 transition-all cursor-pointer bg-gray-100 text-gray-600 ${selectedRole === role.id ? "bg-green-600 text-white" : ""}`}
               onClick={() => setSelectedRole(role.id)}
             >
               <div>{role.icon}</div>

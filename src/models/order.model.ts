@@ -19,7 +19,7 @@ export interface IOrder extends Document {
     fullName: string;
     city: string;
     state: string;
-    pinCode: string;
+    pinCode: number;
     fullAddress: string;
     mobile: string;
     latitude: number;
@@ -72,7 +72,7 @@ const orderSchema = new Schema<IOrder>(
       fullName: String,
       city: String,
       state: String,
-      pincode: String,
+      pincode: Number,
       fullAddress: String,
       mobile: String,
       latitude: Number,

@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import CardPage from "./../cart/page";
-import { setDivision } from "@/redux/cartSlice";
+import { clearCardData, setDivision } from "@/redux/cartSlice";
 import { toast } from "react-toastify";
 import { getSocket } from "@/lib/socket";
 
@@ -42,6 +42,7 @@ const CheckoutPage = () => {
   const { deliveryFee, finalTotal, subTotal, cartData } = useSelector(
     (state: RootState) => state.cart,
   );
+
   const dispatch = useDispatch<AppDispatch>();
   const [searchLoading, setSearchLoading] = useState(false);
   const [mainLocationLoading, setMainLocationLoading] =
@@ -195,8 +196,10 @@ const CheckoutPage = () => {
           message: "New Order come",
           orderItem: result.data,
         });
+
         toast.success("Order placed successfully!");
         router.push("/user/order-success");
+        dispatch(clearCardData());
       }
     } catch (error) {
       console.log(error);

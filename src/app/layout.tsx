@@ -4,6 +4,7 @@ import "./globals.css";
 import Provider from "@/Provider";
 import StoreProvider from "@/redux/StoreProvider";
 import InitUser from "@/InitUser";
+import AdminMessage from "@/socket/AdminMessage";
 
 export const metadata: Metadata = {
   title: "Snapcart | 10 minutes grocery Delivery App",
@@ -21,7 +22,7 @@ export default function RootLayout({
         <Provider>
           <StoreProvider>
             <InitUser />
-            {children}
+            <AdminMessage>{children}</AdminMessage>
           </StoreProvider>
         </Provider>
       </body>

@@ -16,26 +16,14 @@ const ManageOrder = () => {
   console.log(orders);
   const socket = getSocket();
 
-  // useEffect(() => {
-  //   const getOrder = async () => {
-  //     const result = await axios.get("/api/admin/get-orders");
-  //     dispatch(setAllOrders(result.data));
-  //   };
-  //   getOrder();
-  // }, [dispatch]);
-
   useEffect(() => {
-    if (!socket) return;
-    socket.on("admin-notification", (newOrder) => {
-      console.log("New order received :", newOrder.customerName);
-      toast.success(`নতুন অর্ডার এসেছে! কাস্টমার: ${newOrder.customerName}`);
-      dispatch(addNewOrder(newOrder.orderItem));
-    });
-
-    return () => {
-      socket.off("admin-notification");
+    const getOrder = async () => {
+      const result = await axios.get("/api/admin/get-orders");
+      dispatch(setAllOrders(result.data));
     };
-  }, [dispatch, socket]);
+    getOrder();
+  }, [dispatch]);
+
   console.log(orders);
 
   return (

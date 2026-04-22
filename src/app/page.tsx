@@ -1,13 +1,13 @@
 import { auth } from "@/auth";
 import AdminDashboard from "@/components/AdminDashboard";
-import DelivaryDashboard from "@/components/DelivaryDashboard";
+import DeliveryBoys from "@/components/DeliveryBoys";
 import EditAndPassword from "@/components/EditAndPassword";
 import GeoUpdater from "@/components/GeoUpdater";
 import Nav from "@/components/Nav";
 import UserDashboard from "@/components/UserDashboard";
 import connectDB from "@/lib/db";
 import userModel from "@/models/user.model";
-import AdminMessage from "@/socket/AdminMessage";
+
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -42,10 +42,9 @@ const Home = async () => {
       ) : user.role === "admin" ? (
         <>
           <AdminDashboard />
-          <AdminMessage />
         </>
       ) : (
-        user.role === "delivery" && <DelivaryDashboard />
+        user.role === "delivery" && <DeliveryBoys />
       )}
     </>
   );
