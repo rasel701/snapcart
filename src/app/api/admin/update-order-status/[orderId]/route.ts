@@ -64,7 +64,6 @@ export async function POST(
           .populate("order");
         console.log(deliveryAssignment);
         // send-delivery-notification
-        console.log("Send-delivery-notification");
         socket.emit("send-delivery-notification", {
           deliveryBoyIds: candidates,
           data: {
@@ -88,6 +87,7 @@ export async function POST(
       }));
       await deliveryAssignment.populate("order");
     }
+    socket.emit("send-user-notification", order);
     await order.save();
     await order.populate("user");
 

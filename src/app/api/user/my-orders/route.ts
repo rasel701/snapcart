@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     const session = await auth();
     const orders = await orderModel
       .find({ user: session?.user?.id })
-      .populate("user")
+      .populate("user assigndDeliveryBoy")
       .sort({ createdAt: -1 });
     if (!orders) {
       return NextResponse.json(

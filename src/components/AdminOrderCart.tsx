@@ -1,6 +1,5 @@
 "use client";
 import React, { useRef, useState } from "react";
-import { IOrder } from "@/models/order.model";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Package,
@@ -13,11 +12,48 @@ import {
   CheckCircle2,
   Clock,
   Home,
+  UserCheck,
 } from "lucide-react";
 import Image from "next/image";
 import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 import { getSocket } from "@/lib/socket";
+import mongoose from "mongoose";
+import { UserI } from "@/models/user.model";
+
+interface IOrder {
+  _id: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId;
+  items: [
+    {
+      grocery: mongoose.Types.ObjectId;
+      name: string;
+      price: string;
+      unit: string;
+      image: string;
+      quantity: number;
+    },
+  ];
+  totalAmount: number;
+  paymentMethod: "cod" | "online";
+  address: {
+    fullName: string;
+    city: string;
+    state: string;
+    pinCode: number;
+    fullAddress: string;
+    mobile: string;
+    latitude: number;
+    longitude: number;
+  };
+  isPaid: boolean;
+  assignment?: mongoose.Types.ObjectId;
+  assigndDeliveryBoy?: UserI;
+  status: "pending" | "out of delivery" | "delivered";
+  deliveryFee: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 const AdminOrderCart = ({ order }: { order: IOrder }) => {
   const socket = getSocket();
@@ -36,7 +72,7 @@ const AdminOrderCart = ({ order }: { order: IOrder }) => {
     contentRef,
     documentTitle: `Invoice_${order._id}`,
   });
-
+  console.log(currentStatus, +" ", order._id);
   const updateStatus = async (orderId: string, status: string) => {
     try {
       const result = await axios.post(
@@ -80,12 +116,13 @@ const AdminOrderCart = ({ order }: { order: IOrder }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 ">
           <span
-            className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[order.status]}`}
+            className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[currentStatus]}`}
           >
-            {currentStatus.toUpperCase()}
+            {currentStatus.toUpperCase()} x
           </span>
+
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -121,6 +158,27 @@ const AdminOrderCart = ({ order }: { order: IOrder }) => {
           <span className="text-sm font-bold text-green-700">
             ৳{order.totalAmount}
           </span>
+        </div>
+        <div>
+          {order.assigndDeliveryBoy && (
+            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-2 flex items-center justify-between">
+              <div className="flex items-center gap-3 text-sm text-gray-700 justify-center ">
+                <UserCheck className="text-green-600 font-bold w-[40px] h-[40px]" />
+                <div className="flex flex-wrap gap-4 justify-center items-center">
+                  <span className="text-lg font-bold text-gray-600">
+                    Assigned to: {order.assigndDeliveryBoy?.name}
+                  </span>
+                  <p>📞: {order?.assigndDeliveryBoy?.mobile}</p>
+                  <a
+                    href={`tel:${order.assigndDeliveryBoy?.mobile}`}
+                    className="bg-green-400 p-2 rounded-full text-gray-800 font-semibold hover:bg-green-500 transition-all"
+                  >
+                    Call
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

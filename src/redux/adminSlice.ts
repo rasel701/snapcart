@@ -1,5 +1,40 @@
-import { IOrder } from "@/models/order.model";
+import { UserI } from "@/models/user.model";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import mongoose from "mongoose";
+
+interface IOrder {
+  _id: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId;
+  items: [
+    {
+      grocery: mongoose.Types.ObjectId;
+      name: string;
+      price: string;
+      unit: string;
+      image: string;
+      quantity: number;
+    },
+  ];
+  totalAmount: number;
+  paymentMethod: "cod" | "online";
+  address: {
+    fullName: string;
+    city: string;
+    state: string;
+    pinCode: number;
+    fullAddress: string;
+    mobile: string;
+    latitude: number;
+    longitude: number;
+  };
+  isPaid: boolean;
+  assignment?: mongoose.Types.ObjectId;
+  assigndDeliveryBoy?: UserI;
+  status: "pending" | "out of delivery" | "delivered";
+  deliveryFee: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 interface IAdmin {
   orders: IOrder[];

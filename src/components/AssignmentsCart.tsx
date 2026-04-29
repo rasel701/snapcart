@@ -1,5 +1,6 @@
 import { IDeliveryAssignment } from "@/models/deliveryAssignment.model";
 import { IOrder } from "@/models/order.model";
+import axios from "axios";
 import mongoose from "mongoose";
 
 type StatusKey = "brodcasted" | "out of delivery" | "delivered" | "pending";
@@ -70,6 +71,19 @@ const AssignmentsCart = ({
   const shortId = String(order?._id ?? "")
     .slice(10)
     .toUpperCase();
+
+    
+
+    const handleAccept=async()=>{
+      try {
+        const result = await axios.get(`/api/delivery/assignment/${assignment._id}/accept-assignment`)
+        console.log(result)
+        
+      } catch (error) {
+        console.log(error)
+        
+      }
+    }
 
   return (
     <div className="w-full max-w-sm rounded-2xl bg-white border border-gray-100 shadow-lg shadow-gray-100/60 overflow-hidden font-sans">
@@ -217,9 +231,9 @@ const AssignmentsCart = ({
         </span>
         <div className="flex gap-2">
           <button className="rounded-lg border border-gray-200 bg-white px-4 py-1.5 text-[12px] font-semibold text-gray-600 transition hover:bg-gray-50 active:scale-95">
-            Details
+            Reject
           </button>
-          <button className="rounded-lg bg-gradient-to-br from-green-500 to-green-700 px-4 py-1.5 text-[12px] font-semibold text-white shadow-md shadow-green-200 transition hover:brightness-105 active:scale-95">
+          <button className="rounded-lg bg-gradient-to-br from-green-500 to-green-700 px-4 py-1.5 text-[12px] font-semibold text-white shadow-md shadow-green-200 transition hover:brightness-105 active:scale-95"  onClick={handleAccept}>
             Accept
           </button>
         </div>

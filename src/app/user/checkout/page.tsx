@@ -184,7 +184,6 @@ const CheckoutPage = () => {
       const result = await axios.post(endpoint, {
         ...paymentData,
       });
-      console.log(result);
 
       if (paymentMethod === "online") {
         window.location.href = result.data.url;

@@ -2,7 +2,7 @@ import mongoose, { Schema, model, models, Document } from "mongoose";
 
 type Role = "user" | "admin" | "delivery";
 
-interface UserI extends Document {
+export interface UserI extends Document {
   name: string;
   email: string;
   password?: string;

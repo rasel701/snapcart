@@ -7,7 +7,6 @@ import Nav from "@/components/Nav";
 import UserDashboard from "@/components/UserDashboard";
 import connectDB from "@/lib/db";
 import userModel from "@/models/user.model";
-
 import { redirect } from "next/navigation";
 import React from "react";
 

@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     await connectDB();
     const orders = await orderModel
       .find({})
-      .populate("user")
+      .populate("user assigndDeliveryBoy")
       .sort({ createdAt: -1 });
 
     return NextResponse.json(orders, { status: 200 });

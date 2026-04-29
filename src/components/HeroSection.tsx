@@ -1,8 +1,11 @@
 "use client";
+import { getSocket } from "@/lib/socket";
+import { RootState } from "@/redux/store";
 import { Leaf, ShoppingBag, Smartphone, Truck } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 const HeroSection = () => {
   const services = [
@@ -39,7 +42,16 @@ const HeroSection = () => {
     },
   ];
 
+  const socket = getSocket();
+  const { userData } = useSelector((state: RootState) => state.user);
+
   const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (socket && userData?._id) {
+      socket.emit("join-room", userData?._id);
+    }
+  }, [userData?._id]);
 
   useEffect(() => {
     const timer = setInterval(() => {

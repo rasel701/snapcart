@@ -9,10 +9,48 @@ import {
   MapPin,
   Package,
   Truck,
+  UserCheck,
 } from "lucide-react";
 import Image from "next/image";
+import mongoose from "mongoose";
+import { UserI } from "@/models/user.model";
+
+interface IOrder {
+  _id: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId;
+  items: [
+    {
+      grocery: mongoose.Types.ObjectId;
+      name: string;
+      price: string;
+      unit: string;
+      image: string;
+      quantity: number;
+    },
+  ];
+  totalAmount: number;
+  paymentMethod: "cod" | "online";
+  address: {
+    fullName: string;
+    city: string;
+    state: string;
+    pinCode: number;
+    fullAddress: string;
+    mobile: string;
+    latitude: number;
+    longitude: number;
+  };
+  isPaid: boolean;
+  assignment?: mongoose.Types.ObjectId;
+  assigndDeliveryBoy?: UserI;
+  status: "pending" | "out of delivery" | "delivered";
+  deliveryFee: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 const UserOrderCart = ({ order }: { order: IOrder }) => {
+  const [status, setStatus] = useState(order?.status);
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -57,7 +95,7 @@ const UserOrderCart = ({ order }: { order: IOrder }) => {
           <span
             className={`px-3 py-1 text-xs font-semibold border rounded-full ${getStatusColor(order.status)}`}
           >
-            {order.status}
+            {order?.status}
           </span>
         </div>
       </div>
@@ -80,6 +118,27 @@ const UserOrderCart = ({ order }: { order: IOrder }) => {
         <div className="flex items-center gap-2 text-gray-700 text-sm">
           <MapPin size={16} className="text-green-600" />
           <span className="truncate">{order.address.fullAddress}</span>
+        </div>
+        <div>
+          {order.assigndDeliveryBoy && (
+            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-2 flex items-center justify-between">
+              <div className="flex items-center gap-3 text-sm text-gray-700 justify-center ">
+                <UserCheck className="text-green-600 font-bold w-[30px] h-[30px]" />
+                <div className="flex flex-wrap gap-4 justify-center items-center">
+                  <span className="text-lg font-bold text-gray-600">
+                    Assigned to: {order.assigndDeliveryBoy?.name}
+                  </span>
+                  <p>📞: {order?.assigndDeliveryBoy?.mobile}</p>
+                  <a
+                    href={`tel:${order.assigndDeliveryBoy?.mobile}`}
+                    className="bg-green-400 p-2 rounded-full text-gray-800 font-semibold hover:bg-green-500 transition-all"
+                  >
+                    Call
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="border-t border-gray-200 pt-3">

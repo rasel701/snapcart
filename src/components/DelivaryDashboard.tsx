@@ -33,7 +33,7 @@ const DelivaryDashboard = () => {
     fetchAssignment();
   }, [userData?._id, socket]);
 
-  console.log(assignments);
+  console.log(userData);
 
   return (
     <div className="w-full min-h-screen bg-gray-50 p-4">
