@@ -2,59 +2,66 @@ import { auth } from "@/auth";
 import connectDB from "@/lib/db";
 import deliveryAssignmentModel from "@/models/deliveryAssignment.model";
 import orderModel from "@/models/order.model";
+import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(
+export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } },
 ) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     await connectDB();
     const { id } = await params;
-    const session = await auth();
-    const deliveryBoyId = session?.user?.id;
+    const authSession = await auth();
+    const deliveryBoyId = authSession?.user?.id;
+    console.log("Delivery Boy ID being assigned:", deliveryBoyId);
     if (!deliveryBoyId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 400 });
     }
-    const assignment = await deliveryAssignmentModel.findById(id);
-
-    if (!assignment) {
-      return NextResponse.json(
-        { message: "Assigment not found" },
-        { status: 400 },
-      );
-    }
-
-    if (assignment.status !== "brodcasted") {
-      return NextResponse.json(
-        { message: "Assignment expired" },
-        { status: 400 },
-      );
-    }
-    const alreadyAssigned = await deliveryAssignmentModel.findOne({
+    const alreadyAssignment = await deliveryAssignmentModel.findOne({
       assignedTo: deliveryBoyId,
-      status: { $nin: ["brodcasted", "completed"] },
+      status: "assigned",
     });
 
-    if (alreadyAssigned) {
+    if (alreadyAssignment) {
       return NextResponse.json(
-        { message: "already assigned to other order" },
+        { message: "You already have an active delivery" },
         { status: 400 },
       );
     }
 
-    assignment.assignedTo = deliveryBoyId;
-    assignment.status = "assigned";
-    assignment.acceptedAt = new Date();
-    await assignment.save();
+    const assignment = await deliveryAssignmentModel.findOneAndUpdate(
+      { _id: id, status: "brodcasted" },
+      {
+        $set: {
+          assignedTo: deliveryBoyId,
+          status: "assigned",
+          acceptedAt: new Date(),
+        },
+      },
+      { new: true, session },
+    );
+    console.log(assignment, "Assignment is delivery");
 
-    const order = await orderModel.findById(assignment.order);
-    if (!order) {
-      return NextResponse.json({ message: "order not found" }, { status: 400 });
+    if (!assignment) {
+      await session.abortTransaction();
+      return NextResponse.json(
+        { message: "Assignment no longer available or already taken" },
+        { status: 400 },
+      );
     }
-    order.assigndDeliveryBoy = deliveryBoyId;
-    await order.save();
 
+    const order = await orderModel.findByIdAndUpdate(
+      assignment.order,
+      { assigndDeliveryBoy: deliveryBoyId },
+      { session },
+    );
+
+    if (!order) {
+      throw new Error("Order not found");
+    }
     await deliveryAssignmentModel.updateMany(
       {
         _id: { $ne: assignment._id },
@@ -62,17 +69,23 @@ export async function GET(
         status: "brodcasted",
       },
       { $pull: { brodcastedTo: deliveryBoyId } },
+      { session },
     );
+
+    await session.commitTransaction();
 
     return NextResponse.json(
       { message: "order accepted successfully" },
       { status: 200 },
     );
   } catch (error) {
+    await session.abortTransaction();
     console.log("accepted assignment error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 },
     );
+  } finally {
+    session.endSession();
   }
 }

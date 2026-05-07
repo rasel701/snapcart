@@ -14,6 +14,7 @@ import {
 import Image from "next/image";
 import mongoose from "mongoose";
 import { UserI } from "@/models/user.model";
+import Link from "next/link";
 
 interface IOrder {
   _id: mongoose.Types.ObjectId;
@@ -135,6 +136,12 @@ const UserOrderCart = ({ order }: { order: IOrder }) => {
                   >
                     Call
                   </a>
+                  <Link
+                    href={`/user/track-order/${order._id}`}
+                    className="bg-green-600 px-7 py-2 rounded-lg font-semibold text-white"
+                  >
+                    Track your order
+                  </Link>
                 </div>
               </div>
             </div>

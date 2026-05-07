@@ -8,32 +8,117 @@ import { getSocket } from "@/lib/socket";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { toast } from "react-toastify";
+import LiveMap from "./LiveMap";
+import DeliveryBoyChat from "./DeliveryBoyChat";
+
+interface ILocation {
+  latitude: number;
+  longitude: number;
+}
 
 const DelivaryDashboard = () => {
   const [assignments, setAssignment] = useState<IDeliveryAssignment[]>([]);
+  const [currentOrder, setCurrentOrder] = useState(null);
+  const [userLocation, setUserLoacation] = useState<ILocation>({
+    latitude: 0,
+    longitude: 0,
+  });
+  const [deliveryBoyLocation, setDeliveryBoyLocation] = useState<ILocation>({
+    latitude: 0,
+    longitude: 0,
+  });
   const socket = getSocket();
   const { userData } = useSelector((state: RootState) => state.user);
   const [count, setCount] = useState(0);
-  useEffect(() => {
-    if (!userData?._id || !socket) return;
-    const fetchAssignment = async () => {
-      try {
-        const result = await axios.get("/api/delivery/get-assignment");
-        setAssignment(result.data);
-        socket.emit("join-room", userData?._id);
-        socket.on("new-assignment-received", (data) => {
-          toast.success("Delivery order come");
-          setAssignment((pre) => [data?.deliveryOrderData, ...pre]);
-          setCount(count + 1);
+
+  const fetchInitialData = async () => {
+    if (!userData?._id) return;
+    try {
+      const [assignmentRes, currentOrderRes] = await Promise.all([
+        axios.get("/api/delivery/get-assignment"),
+        axios.get("/api/delivery/current-order"),
+      ]);
+      setAssignment(assignmentRes.data);
+      console.log("current order:", currentOrderRes.data);
+      if (currentOrderRes?.data?.active) {
+        setCurrentOrder(currentOrderRes.data.assignment);
+        setUserLoacation({
+          latitude: currentOrderRes.data.assignment.order.address.latitude,
+          longitude: currentOrderRes.data.assignment.order.address.longitude,
         });
-      } catch (error) {
-        console.log(error);
       }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [userData?._id]);
+
+  useEffect(() => {
+    if (!socket || !userData?._id) return;
+    socket.emit("join-room", userData._id);
+    const handleNewAssignment = (data: any) => {
+      toast.success("নতুন ডেলিভারি অর্ডার এসেছে!");
+      setAssignment((prev) => [data?.deliveryOrderData, ...prev]);
+      setCount((prevCount) => prevCount + 1);
     };
-    fetchAssignment();
+    socket.on("new-assignment-received", handleNewAssignment);
+
+    return () => {
+      socket.off("new-assignment-received", handleNewAssignment);
+    };
+  }, [socket, userData?._id]);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    const watcher = navigator.geolocation.watchPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        setDeliveryBoyLocation({ latitude: lat, longitude: lon });
+        socket.emit("update-location", {
+          userId: userData._id,
+          latitude: lat,
+          longitude: lon,
+        });
+      },
+      (error) => {
+        console.log(error);
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 },
+    );
+
+    return () => navigator.geolocation.clearWatch(watcher);
   }, [userData?._id, socket]);
 
-  console.log(userData);
+  console.log("deliveryboylocation", deliveryBoyLocation);
+
+  if (currentOrder) {
+    return (
+      <div className="p-4 min-h-screen bg-gray-50 pt-[120px]">
+        <div className="max-w-2xl mx-auto ">
+          <h2 className="text-2xl font-bold text-green-700 mb-2 text-center">
+            Active Delivery
+          </h2>
+          <p className="text-gray-600 text-sm mb-4">
+            Order#{currentOrder?.order?._id.slice(10)}
+          </p>
+          <div className="rounded-xl border shadow-lg overflow-hidden mb-6">
+            <LiveMap
+              userLocation={userLocation}
+              deliveryBoyLocation={deliveryBoyLocation}
+            />
+          </div>
+          <DeliveryBoyChat
+            orderId={currentOrder?.order?._id}
+            senderId={userData?._id || undefined}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen bg-gray-50 p-4">

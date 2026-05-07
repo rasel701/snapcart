@@ -7,7 +7,7 @@ export interface IDeliveryAssignment extends Document {
   _id: mongoose.Types.ObjectId;
   order: mongoose.Types.ObjectId;
   brodcastedTo: mongoose.Types.ObjectId[];
-  assigndTo: mongoose.Types.ObjectId | null;
+  assignedTo: mongoose.Types.ObjectId | null;
   status: "brodcasted" | "assigned" | "completed";
   acceptedAt: Date;
   createdAt: Date;
@@ -21,9 +21,10 @@ const deliveryAssignmentSchema = new Schema<IDeliveryAssignment>(
       ref: "Order",
     },
     brodcastedTo: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    assigndTo: {
+    assignedTo: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      default: null,
     },
     status: {
       type: String,
