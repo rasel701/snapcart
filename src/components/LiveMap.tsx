@@ -55,7 +55,7 @@ const LiveMap = ({
       : [];
 
   return (
-    <div className="w-full h-[500] rounded-xl overflow-hidden shadow relative">
+    <div className="w-full h-[500] rounded-xl overflow-hidden shadow relative z-40">
       <MapContainer
         center={center as LatLngExpression}
         zoom={13}

@@ -114,6 +114,7 @@ const DelivaryDashboard = () => {
           <DeliveryBoyChat
             orderId={currentOrder?.order?._id}
             senderId={userData?._id || undefined}
+            role={userData?.role}
           />
         </div>
       </div>

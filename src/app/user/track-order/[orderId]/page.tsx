@@ -26,6 +26,7 @@ const TrackOrder = async ({ params }: Props) => {
         userLoc={userLoc}
         order={orderItem}
         userId={session?.user?.id}
+        role={session?.user?.role}
       />
     </>
   );

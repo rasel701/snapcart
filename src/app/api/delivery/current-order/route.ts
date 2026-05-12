@@ -9,7 +9,7 @@ export async function GET() {
     await connectDB();
     const session = await auth();
     const deliveryBoyId = session?.user?.id;
-    console.log("Delivery Boy ID being assigned:", deliveryBoyId);
+console.log("Delivery Boy ID being assigned:", deliveryBoyId);
     const activeAssignment = await deliveryAssignmentModel
       .findOne({
         assignedTo: deliveryBoyId,

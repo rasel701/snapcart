@@ -1,20 +1,26 @@
 "use client";
 import { getSocket } from "@/lib/socket";
 import { IMessage } from "@/models/message.model";
+import { RootState } from "@/redux/store";
 import axios from "axios";
-import { Send } from "lucide-react";
+import { Loader, Send, Sparkle } from "lucide-react";
 import mongoose from "mongoose";
 import { AnimatePresence, motion } from "motion/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 
 interface props {
   orderId: mongoose.Types.ObjectId;
   senderId: mongoose.Types.ObjectId | undefined | string;
+  role: string | undefined;
 }
 
-const DeliveryBoyChat = ({ orderId, senderId }: props) => {
+const DeliveryBoyChat = ({ orderId, senderId, role }: props) => {
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState<IMessage[]>([]);
+  const chatBoxRef = useRef<HTMLDivElement>(null);
+  const { userData } = useSelector((state: RootState) => state.user);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -61,11 +67,81 @@ const DeliveryBoyChat = ({ orderId, senderId }: props) => {
     getAllMessage();
   }, []);
 
-  console.log(messages);
+  useEffect(() => {
+    chatBoxRef.current?.scrollTo({
+      top: chatBoxRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages]);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleAiSuggest = async () => {
+    console.log("Hello");
+    let lastMsg = "";
+    if (role === "delivery") {
+      const deliveryMsg = messages.filter(
+        (item) => item.senderId === userData?._id,
+      );
+      lastMsg = deliveryMsg[deliveryMsg.length - 1].text;
+    }
+
+    if (role === "user") {
+      const userMsg = messages.filter(
+        (item) => item.senderId === userData?._id,
+      );
+      lastMsg = userMsg[userMsg.length - 1].text;
+    }
+    setIsGenerating(true);
+    console.log("current text: ", lastMsg);
+    try {
+      const res = await axios.post("/api/chat/ai-suggestions", {
+        message: lastMsg,
+        role: role,
+      });
+      const result = res.data.data.split(",");
+      setSuggestions([...result]);
+    } catch (error) {
+      console.error("Error fetching AI suggestions:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  if (role === "delivery") {
+    const x = console.log(suggestions);
+  }
 
   return (
     <div className="bg-white rounded-3xl shadow-lg border p-4 h-[430px] flex flex-col">
-      <div className="flex-1 overflow-y-auto p-2 space-y-3">
+      <div className="flex justify-between items-center mb-3">
+        <span className="font-semibold text-gray-700 text-sm">
+          Quick Replies
+        </span>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          disabled={isGenerating}
+          className="px-3 py-1 text-sm flex items-center gap-1 bg-purple-100 text-purple-700 rounded-full shadow-sm border border-purple-200"
+          onClick={handleAiSuggest}
+        >
+          <Sparkle />
+          {isGenerating ? <Loader className="animate-spin" /> : " AI Suggest"}
+        </motion.button>
+      </div>
+
+      <div className="flex gap-2 flex-wrap mb-2 ">
+        {suggestions.map((s, index) => (
+          <motion.div
+            key={index}
+            whileTap={{ scale: 0.9 }}
+            className="px-3 py-1 text-xs bg-green-100 border-green-200 text-shadow-green-700 cursor-pointer"
+            onClick={() => setNewMessage(s)}
+          >
+            {s}
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-2 space-y-3" ref={chatBoxRef}>
         <AnimatePresence>
           {messages?.map((msg) => (
             <motion.div
@@ -77,7 +153,7 @@ const DeliveryBoyChat = ({ orderId, senderId }: props) => {
               className={`flex ${msg.senderId === senderId ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`${msg.senderId === senderId ? "bg-green-600 text-white rounded-l-lg rounded-tr-xl px-3" : "bg-gray-100 text-gray-800 rounded-bl-none"}`}
+                className={`${msg.senderId === senderId ? "bg-green-600 text-white rounded-l-lg rounded-tr-xl px-3" : "bg-gray-100 text-gray-800 rounded-bl-none px-3 rounded-sm"}`}
               >
                 <p>{msg.text}</p>
                 <p className="text-[10px] opacity-70 mt-1 text-right">

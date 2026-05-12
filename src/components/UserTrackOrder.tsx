@@ -48,13 +48,20 @@ interface propes {
   userLoc: number[];
   order: IOrder;
   userId: string | undefined;
+  role: string | undefined;
 }
 
 interface ILocation {
   latitude: number;
   longitude: number;
 }
-const UserTrackOrder = ({ deliveryBoyLoc, userLoc, order, userId }: propes) => {
+const UserTrackOrder = ({
+  deliveryBoyLoc,
+  userLoc,
+  order,
+  userId,
+  role,
+}: propes) => {
   const router = useRouter();
 
   const [userLocation, setUserLoacation] = useState<ILocation>({
@@ -101,7 +108,7 @@ const UserTrackOrder = ({ deliveryBoyLoc, userLoc, order, userId }: propes) => {
             deliveryBoyLocation={deliveryBoyLocation}
           />
         </div>
-        <DeliveryBoyChat orderId={order._id} senderId={userId} />
+        <DeliveryBoyChat orderId={order._id} senderId={userId} role={role} />
       </div>
     </div>
   );
