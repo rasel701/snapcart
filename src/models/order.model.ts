@@ -32,6 +32,9 @@ export interface IOrder extends Document {
   deliveryFee: number;
   createdAt?: Date;
   updatedAt?: Date;
+  deliveryOtp: string | null;
+  deliveryOtpVerification: boolean;
+  deliveryAt: Date;
 }
 
 const orderSchema = new Schema<IOrder>(
@@ -86,6 +89,17 @@ const orderSchema = new Schema<IOrder>(
     assigndDeliveryBoy: {
       type: Schema.Types.ObjectId,
       ref: "User",
+    },
+    deliveryOtp: {
+      type: String,
+      default: null,
+    },
+    deliveryOtpVerification: {
+      type: Boolean,
+      default: false,
+    },
+    deliveryAt: {
+      type: Date,
     },
     status: {
       type: String,

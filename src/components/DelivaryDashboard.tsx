@@ -52,6 +52,8 @@ const DelivaryDashboard = () => {
     }
   };
 
+  console.log(assignments);
+
   useEffect(() => {
     fetchInitialData();
   }, [userData?._id]);
@@ -95,6 +97,40 @@ const DelivaryDashboard = () => {
 
   console.log("deliveryboylocation", deliveryBoyLocation);
 
+  const [showOtpBox, setShowOtpBox] = useState(false);
+  const [otp, setOtp] = useState({ a: "", b: "", c: "", d: "" });
+
+  const sendOtp = async () => {
+    try {
+      const result = await axios.post("/api/delivery/otp/send", {
+        orderId: currentOrder?.order?._id,
+      });
+      setShowOtpBox(true);
+      console.log(result);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const currOTO = `${otp.a}${otp.b}${otp.c}${otp.d}`;
+
+  const verifyOtp = async () => {
+    if (!otp.a || !otp.b || !otp.c || !otp.d) return;
+    try {
+      const result = await axios.post("/api/delivery/otp/verify", {
+        orderId: currentOrder?.order?._id,
+        otp: currOTO,
+      });
+
+      console.log(result.data);
+      setCurrentOrder(null);
+      setShowOtpBox(false);
+      alert("Delivery Successfully completed");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   if (currentOrder) {
     return (
       <div className="p-4 min-h-screen bg-gray-50 pt-[120px]">
@@ -116,6 +152,57 @@ const DelivaryDashboard = () => {
             senderId={userData?._id || undefined}
             role={userData?.role}
           />
+          <div className="mt-6 bg-white rounded-xl border shadow p-6">
+            {currentOrder.order.deliveryOtpVerification ||
+              (!showOtpBox && (
+                <button
+                  className="w-full py-4 bg-green-600 text-white rounded-xl"
+                  onClick={sendOtp}
+                >
+                  Mark as Delivered
+                </button>
+              ))}
+            {showOtpBox && (
+              <div className="mt-3">
+                <div className="flex justify-center items-center gap-2">
+                  <input
+                    type="text"
+                    className="w-[100px] h-[40px] rounded-xl bg-gray-300 text-balance text-center font-bold text-xl p-2"
+                    maxLength={1}
+                    value={otp.a}
+                    onChange={(e) => setOtp({ ...otp, a: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    className="w-[100px] h-[40px] rounded-xl bg-gray-300 text-balance text-center font-bold text-xl p-2"
+                    maxLength={1}
+                    value={otp.b}
+                    onChange={(e) => setOtp({ ...otp, b: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    className="w-[100px] h-[40px] rounded-xl bg-gray-300 text-balance text-center font-bold text-xl p-2"
+                    maxLength={1}
+                    value={otp.c}
+                    onChange={(e) => setOtp({ ...otp, c: e.target.value })}
+                  />
+                  <input
+                    type="text"
+                    className="w-[100px] h-[40px] rounded-xl bg-gray-300 text-balance text-center font-bold text-xl p-2"
+                    maxLength={1}
+                    value={otp.d}
+                    onChange={(e) => setOtp({ ...otp, d: e.target.value })}
+                  />
+                </div>
+                <button
+                  className="bg-green-600 px-7 py-2 rounded-xl mx-auto flex items-center mt-6 cursor-pointer"
+                  onClick={verifyOtp}
+                >
+                  Verify OTP
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );

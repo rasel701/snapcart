@@ -13,6 +13,8 @@ export async function GET() {
         status: "brodcasted",
       })
       .populate("order");
+    console.log("assignment::::", assignment);
+    console.log("session: ", session?.user?.id);
     return NextResponse.json(assignment, { status: 200 });
   } catch (error) {
     console.log("get deliver boy ", error);
