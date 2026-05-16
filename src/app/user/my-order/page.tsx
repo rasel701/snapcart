@@ -63,9 +63,9 @@ const MyOrder = () => {
     getMyOrder();
   }, []);
   const router = useRouter();
-  const socket = getSocket();
 
   useEffect(() => {
+    const socket = getSocket();
     if (!socket || !userData?._id) return;
 
     socket.emit("join-room", userData._id);
@@ -83,7 +83,7 @@ const MyOrder = () => {
     return () => {
       socket.off("new-order-notification");
     };
-  }, [socket, userData?._id]);
+  }, [userData?._id]);
 
   return (
     <div className="bg-linear-tob from-white to-gray-600 min-h-[200vh] ">
@@ -119,7 +119,7 @@ const MyOrder = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
               >
-                <UserOrderCart order={order} />
+                <UserOrderCart order={order} setOrders={setOrders} />
               </motion.div>
             ))}
           </div>

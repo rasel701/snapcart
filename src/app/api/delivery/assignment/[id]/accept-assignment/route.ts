@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import connectDB from "@/lib/db";
+import { getSocket } from "@/lib/socket";
 import deliveryAssignmentModel from "@/models/deliveryAssignment.model";
 import orderModel from "@/models/order.model";
 import mongoose from "mongoose";
@@ -62,6 +63,14 @@ export async function POST(
     if (!order) {
       throw new Error("Order not found");
     }
+    const sendOrder = await orderModel
+      .findById(assignment.order)
+      .session(session)
+      .populate("user  assigndDeliveryBoy");
+    console.log("send order is sendOrder: ", sendOrder);
+    const socket = getSocket();
+    socket.emit("delivery-assign-send", { sendOrder });
+
     await deliveryAssignmentModel.updateMany(
       {
         _id: { $ne: assignment._id },

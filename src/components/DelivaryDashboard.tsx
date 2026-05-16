@@ -111,6 +111,7 @@ const DelivaryDashboard = () => {
       console.log(error);
     }
   };
+  console.log(userData);
 
   const currOTO = `${otp.a}${otp.b}${otp.c}${otp.d}`;
 
@@ -153,7 +154,7 @@ const DelivaryDashboard = () => {
             role={userData?.role}
           />
           <div className="mt-6 bg-white rounded-xl border shadow p-6">
-            {currentOrder.order.deliveryOtpVerification ||
+            {currentOrder?.order?.deliveryOtpVerification ||
               (!showOtpBox && (
                 <button
                   className="w-full py-4 bg-green-600 text-white rounded-xl"
@@ -224,3 +225,4 @@ const DelivaryDashboard = () => {
 };
 
 export default DelivaryDashboard;
+//myacc008658@gmail.com

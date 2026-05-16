@@ -107,9 +107,7 @@ const DeliveryBoyChat = ({ orderId, senderId, role }: props) => {
     }
   };
 
-  if (role === "delivery") {
-    const x = console.log(suggestions);
-  }
+
 
   return (
     <div className="bg-white rounded-3xl shadow-lg border p-4 h-[430px] flex flex-col">

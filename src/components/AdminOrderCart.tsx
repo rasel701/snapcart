@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Package,
@@ -20,6 +20,9 @@ import axios from "axios";
 import { getSocket } from "@/lib/socket";
 import mongoose from "mongoose";
 import { UserI } from "@/models/user.model";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
+import { addNewOrder } from "@/redux/adminSlice";
 
 interface IOrder {
   _id: mongoose.Types.ObjectId;
@@ -61,6 +64,7 @@ const AdminOrderCart = ({ order }: { order: IOrder }) => {
   const orderStatus = ["pending", "out of delivery"];
   const contentRef = useRef<HTMLDivElement>(null);
   const [currentStatus, setCurrentStatus] = useState<string>(order.status);
+  const dispatch = useDispatch<AppDispatch>();
 
   const statusColors = {
     pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
@@ -86,6 +90,25 @@ const AdminOrderCart = ({ order }: { order: IOrder }) => {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    const socket = getSocket();
+    socket.emit("join-message-room", order._id);
+    socket.on("assign-delivery-boy", ({ sendOrder }) => {
+      console.log("sender item is admin :", sendOrder);
+
+      dispatch(addNewOrder(sendOrder));
+      // setOrders((prevOrders) =>
+      //   prevOrders.map((item) =>
+      //     item._id.toString() === sendOrder._id.toString() ? sendOrder : item,
+      //   ),
+      // );
+    });
+
+    return () => {
+      socket.off("assign-delivery-boy");
+    };
+  }, []);
 
   return (
     <motion.div

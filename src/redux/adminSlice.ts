@@ -52,7 +52,10 @@ const adminSlice = createSlice({
       state.orders = active.payload;
     },
     addNewOrder: (state, action: PayloadAction<IOrder>) => {
-      state.orders = [action.payload, ...state.orders];
+      const filterData = state.orders.filter(
+        (item) => item._id.toString() !== action.payload._id.toString(),
+      );
+      state.orders = [action.payload, ...filterData];
     },
   },
 });

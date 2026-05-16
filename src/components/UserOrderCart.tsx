@@ -1,6 +1,6 @@
-"use cleint";
-import { IOrder } from "@/models/order.model";
-import React, { useState } from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import {
   ChevronDown,
@@ -15,6 +15,7 @@ import Image from "next/image";
 import mongoose from "mongoose";
 import { UserI } from "@/models/user.model";
 import Link from "next/link";
+import { getSocket } from "@/lib/socket";
 
 interface IOrder {
   _id: mongoose.Types.ObjectId;
@@ -50,7 +51,13 @@ interface IOrder {
   updatedAt?: Date;
 }
 
-const UserOrderCart = ({ order }: { order: IOrder }) => {
+const UserOrderCart = ({
+  order,
+  setOrders,
+}: {
+  order: IOrder;
+  setOrders: React.Dispatch<React.SetStateAction<IOrder[]>>;
+}) => {
   const [status, setStatus] = useState(order?.status);
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -66,6 +73,23 @@ const UserOrderCart = ({ order }: { order: IOrder }) => {
     }
   };
   const [expended, setExpended] = useState(false);
+
+  useEffect(() => {
+    const socket = getSocket();
+    socket.emit("join-message-room", order._id);
+    socket.on("assign-delivery-boy", ({ sendOrder }) => {
+      console.log("sender item is :", sendOrder);
+      setOrders((prevOrders) =>
+        prevOrders.map((item) =>
+          item._id.toString() === sendOrder._id.toString() ? sendOrder : item,
+        ),
+      );
+    });
+
+    return () => {
+      socket.off("assign-delivery-boy");
+    };
+  }, []);
 
   return (
     <motion.div
