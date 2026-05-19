@@ -87,9 +87,9 @@ export async function POST(
       }));
       await deliveryAssignment.populate("order");
     }
-    socket.emit("send-user-notification", order);
     await order.save();
     await order.populate("user");
+    socket.emit("send-user-notification", order);
 
     return NextResponse.json(
       {

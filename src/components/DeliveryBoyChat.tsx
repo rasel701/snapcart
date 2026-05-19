@@ -82,14 +82,22 @@ const DeliveryBoyChat = ({ orderId, senderId, role }: props) => {
       const deliveryMsg = messages.filter(
         (item) => item.senderId === userData?._id,
       );
-      lastMsg = deliveryMsg[deliveryMsg.length - 1].text;
+      if (deliveryMsg.length > 0) {
+        lastMsg = deliveryMsg[deliveryMsg.length - 1].text;
+      } else {
+        lastMsg = "";
+      }
     }
 
     if (role === "user") {
       const userMsg = messages.filter(
         (item) => item.senderId === userData?._id,
       );
-      lastMsg = userMsg[userMsg.length - 1].text;
+      if (userMsg.length > 0) {
+        lastMsg = userMsg[userMsg.length - 1]?.text;
+      } else {
+        lastMsg = "";
+      }
     }
     setIsGenerating(true);
     console.log("current text: ", lastMsg);
@@ -106,8 +114,6 @@ const DeliveryBoyChat = ({ orderId, senderId, role }: props) => {
       setIsGenerating(false);
     }
   };
-
-
 
   return (
     <div className="bg-white rounded-3xl shadow-lg border p-4 h-[430px] flex flex-col">

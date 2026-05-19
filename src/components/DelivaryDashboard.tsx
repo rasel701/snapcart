@@ -116,6 +116,7 @@ const DelivaryDashboard = () => {
   const currOTO = `${otp.a}${otp.b}${otp.c}${otp.d}`;
 
   const verifyOtp = async () => {
+    console.log({ otp });
     if (!otp.a || !otp.b || !otp.c || !otp.d) return;
     try {
       const result = await axios.post("/api/delivery/otp/verify", {
@@ -127,6 +128,7 @@ const DelivaryDashboard = () => {
       setCurrentOrder(null);
       setShowOtpBox(false);
       alert("Delivery Successfully completed");
+      setOtp({ a: "", b: "", c: "", d: "" });
     } catch (error) {
       console.log(error);
     }
@@ -216,7 +218,11 @@ const DelivaryDashboard = () => {
         <h2 className="text-2xl font-bold mb-4">Delivery Assignments</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {assignments.map((assignment, index) => (
-            <AssignmentsCart key={index} assignment={assignment} />
+            <AssignmentsCart
+              key={index}
+              assignment={assignment}
+              fetchInitialData={fetchInitialData}
+            />
           ))}
         </div>
       </div>

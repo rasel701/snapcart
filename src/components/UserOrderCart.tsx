@@ -58,7 +58,7 @@ const UserOrderCart = ({
   order: IOrder;
   setOrders: React.Dispatch<React.SetStateAction<IOrder[]>>;
 }) => {
-  const [status, setStatus] = useState(order?.status);
+  // const [status, setStatus] = useState(order?.status);
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -90,6 +90,9 @@ const UserOrderCart = ({
       socket.off("assign-delivery-boy");
     };
   }, []);
+
+  // console.log("Change your order status: ", status);
+  // console.log("chang your order status: ", order);
 
   return (
     <motion.div
@@ -162,7 +165,7 @@ const UserOrderCart = ({
                   </a>
                   <Link
                     href={`/user/track-order/${order._id}`}
-                    className="bg-green-600 px-7 py-2 rounded-lg font-semibold text-white"
+                    className={`bg-green-600 px-7 py-2 rounded-lg font-semibold text-white ${order.status === "delivered" && "hidden"}`}
                   >
                     Track your order
                   </Link>

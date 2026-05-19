@@ -57,8 +57,10 @@ interface IItems {
 
 const AssignmentsCart = ({
   assignment,
+  fetchInitialData,
 }: {
   assignment: IDeliveryAssignment;
+  fetchInitialData: () => void;
 }) => {
   const order = assignment.order as unknown as IOrder;
   const items: IItems[] = order?.items ?? [];
@@ -77,7 +79,7 @@ const AssignmentsCart = ({
       const result = await axios.post(
         `/api/delivery/assignment/${assignment._id}/accept-assignment`,
       );
-      console.log(result);
+      await fetchInitialData();
     } catch (error) {
       console.log(error);
     }

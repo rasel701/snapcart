@@ -20,8 +20,8 @@ import axios from "axios";
 import { getSocket } from "@/lib/socket";
 import mongoose from "mongoose";
 import { UserI } from "@/models/user.model";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
 import { addNewOrder } from "@/redux/adminSlice";
 
 interface IOrder {
@@ -65,6 +65,7 @@ const AdminOrderCart = ({ order }: { order: IOrder }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [currentStatus, setCurrentStatus] = useState<string>(order.status);
   const dispatch = useDispatch<AppDispatch>();
+  const { userData } = useSelector((state: RootState) => state.user);
 
   const statusColors = {
     pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
@@ -76,7 +77,7 @@ const AdminOrderCart = ({ order }: { order: IOrder }) => {
     contentRef,
     documentTitle: `Invoice_${order._id}`,
   });
-  console.log(currentStatus, +" ", order._id);
+
   const updateStatus = async (orderId: string, status: string) => {
     try {
       const result = await axios.post(
@@ -98,17 +99,28 @@ const AdminOrderCart = ({ order }: { order: IOrder }) => {
       console.log("sender item is admin :", sendOrder);
 
       dispatch(addNewOrder(sendOrder));
-      // setOrders((prevOrders) =>
-      //   prevOrders.map((item) =>
-      //     item._id.toString() === sendOrder._id.toString() ? sendOrder : item,
-      //   ),
-      // );
     });
 
     return () => {
       socket.off("assign-delivery-boy");
     };
   }, []);
+
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket || !userData?._id) return;
+
+    // socket.emit("join-room", userData._id);
+
+    socket.on("new-order-notification", ({ order }) => {
+      console.log("Received update:", order);
+      dispatch(addNewOrder(order));
+    });
+
+    return () => {
+      socket.off("new-order-notification");
+    };
+  }, [userData?._id]);
 
   return (
     <motion.div
@@ -141,9 +153,9 @@ const AdminOrderCart = ({ order }: { order: IOrder }) => {
 
         <div className="flex items-center gap-3 ">
           <span
-            className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[currentStatus]}`}
+            className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[order.status]}`}
           >
-            {currentStatus.toUpperCase()} x
+            {order.status}
           </span>
 
           <button
